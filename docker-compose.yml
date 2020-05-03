@@ -1,0 +1,61 @@
+version: '3'
+
+services:
+
+  moodle:
+    hostname: moodle
+    container_name: moodle
+    depends_on: [db]
+    build:
+      context: ./moodle-3.8-apache
+    # image: juanda/moodle:latest
+    environment:
+      VIRTUAL_HOST: "${MOODLE_URL}"
+      MOODLE_DB_HOST: "${MOODLE_DB_HOST}"
+      MOODLE_DB_NAME: "${MOODLE_DB_NAME}"
+      MOODLE_DB_USER: '${MOODLE_MYSQL_USER}'
+      MOODLE_DB_PASSWORD: "${MOODLE_MYSQL_PASSWORD}"
+      MOODLE_ADMIN: "${MOODLE_ADMIN}"
+      MOODLE_ADMIN_PASSWORD: "${MOODLE_ADMIN_PASSWORD}"
+      MOODLE_URL: "${MOODLE_URL}"
+    networks:
+      - frontend
+      - backend
+    volumes:
+      - ./moodle-data:/var/www/html
+
+  db:
+    hostname: db
+    container_name: db
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+      MYSQL_DATABASE: "${MOODLE_DB_NAME}"
+      MYSQL_USER: '${MOODLE_MYSQL_USER}'
+      MYSQL_PASSWORD: '${MOODLE_MYSQL_PASSWORD}'
+    networks:
+      - backend
+    volumes:
+      - ./bbdd:/var/lib/mysql
+      - ./dump:/docker-entrypoint-initdb.d
+
+  
+  phpmyadmin:
+    hostname: phpmyadmin
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    environment:
+      VIRTUAL_HOST: "${PHPMYADMIN_URL}"
+    depends_on: [db]
+    volumes:
+      - /sessions
+    networks:
+      - frontend
+      - backend
+
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge
+

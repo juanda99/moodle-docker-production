@@ -1,0 +1,7 @@
+version: "3"
+
+services:
+  moodle:
+    ports:
+      - 80:80
+      - 443:443
