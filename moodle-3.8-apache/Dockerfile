@@ -14,7 +14,7 @@ EXPOSE 80
 ARG DEBIAN_FRONTEND=noninteractive
 
 ## extensions based on https://github.com/moodlehq/moodle-php-apache/blob/master/Dockerfile
-COPY ./php-extensions.sh /tmp
+COPY php-extensions.sh /tmp
 RUN /tmp/php-extensions.sh
 
 
