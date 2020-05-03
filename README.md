@@ -22,6 +22,7 @@ This repository contains Docker configuration aimed to provide a good starting p
 
 
 ```
+cp env-sample .env
 docker-compose up -d
 ```
 
@@ -30,7 +31,8 @@ Open browser webpage: http://localhost (be patient)
 
 ## Configuration
 
-* Configure your moodle installation using an env file (modify default values if needed)
+* Configure your moodle installation using an .env file
+
 
 ## Activate https
 
