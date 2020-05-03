@@ -11,6 +11,8 @@ services:
     # image: juanda/moodle:latest
     environment:
       VIRTUAL_HOST: "${MOODLE_URL}"
+      LETSENCRYPT_HOST: "${MOODLE_URL}"
+      LETSENCRYPT_EMAIL: ${MOODLE_EMAIL}"
       MOODLE_DB_HOST: "${MOODLE_DB_HOST}"
       MOODLE_DB_NAME: "${MOODLE_DB_NAME}"
       MOODLE_DB_USER: '${MOODLE_MYSQL_USER}'

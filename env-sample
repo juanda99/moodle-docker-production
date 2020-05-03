@@ -9,3 +9,5 @@ MOODLE_ADMIN_PASSWORD=password
 
 MOODLE_URL=localhost
 PHPMYADMIN_URL=phpmyadmin.localhost
+
+MOODLE_EMAIL=example@example.com
