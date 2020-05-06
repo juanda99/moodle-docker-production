@@ -6,9 +6,9 @@ services:
     hostname: moodle
     container_name: moodle
     depends_on: [db]
-    # build:
-    #   context: ./moodle-3.8-apache
-    image: juanda/moodle:3.8-apache
+    build:
+      context: ./moodle-3.8-apache
+    #image: juanda/moodle:3.8-apache
     environment:
       VIRTUAL_HOST: "${MOODLE_URL}"
       LETSENCRYPT_HOST: "${MOODLE_URL}"
@@ -24,7 +24,8 @@ services:
       - frontend
       - backend
     volumes:
-      - ./moodle-data:/var/www/html
+      - ./moodle-data:/var/www/moodledata
+      - ./moodle-code:/var/www/html
 
   db:
     hostname: db

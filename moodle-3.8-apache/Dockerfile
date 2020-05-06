@@ -2,8 +2,9 @@
 FROM  php:7.3-apache-buster
 LABEL MAINTAINER juanda <juandacorreo@gmail.com>
 
-# Moodle version without . (38 means 3.8)
-ARG VERSION=38
+ARG VERSION=3.8.2
+ARG MOOSH_VERSION=0.32
+ARG COMPOSER_VERSION=1.10.6
 
 VOLUME ["/var/moodledata"]
 EXPOSE 80
@@ -42,12 +43,29 @@ RUN { \
 RUN a2enmod rewrite expires
 
 RUN	echo "Installing moodle" && \
-		curl -o moodle.tgz -fSL "https://download.moodle.org/download.php/direct/stable${VERSION}/moodle-latest-${VERSION}.tgz"; \
-		tar -xf moodle.tgz -C /usr/src/; \
-		mkdir /var/www/moodledata && chown www-data:www-data /var/www/moodledata; \
-		rm moodle.tgz
+		curl -o moodle.tar.gz -fSL "https://github.com/moodle/moodle/archive/v${VERSION}.tar.gz"; \
+		mkdir /usr/src/moodle; \
+		tar -xf moodle.tar.gz -C /usr/src/moodle --strip 1; \
+		rm moodle.tar.gz
 
-COPY moodle-config.php /usr/src/moodle/config.php
+RUN	echo "Installing composer" && \
+		curl -o composer.phar -fSL "https://github.com/composer/composer/releases/download/${COMPOSER_VERSION}/composer.phar"; \
+		chmod +x ./composer.phar; \
+    	mv ./composer.phar /usr/local/bin/composer
+
+RUN	echo "Installing mooosh" && \
+		# curl -o moosh.zip -fSL "https://moodle.org/plugins/download.php/21420/moosh_moodle38_2020042300.zip"; \
+		# unzip moosh.zip -d /usr/src; \	
+		# mkdir /usr/src/moosh; \
+		curl -o moosh.tar.gz -fSL "https://github.com/tmuras/moosh/archive/${MOOSH_VERSION}.tar.gz"; \
+		mkdir /usr/src/moosh; \
+		tar -xf moosh.tar.gz -C /usr/src/moosh --strip 1; \
+		composer install -d /usr/src/moosh; \
+		ln -s /usr/src/moosh/moosh.php /usr/local/bin/moosh; \
+		rm moosh.tar.gz
+
+
+# COPY moodle-config.php /usr/src/moodle/config.php
 COPY docker-entrypoint.sh /usr/local/bin/
 
 # Fix the original permissions of /tmp, the PHP default upload tmp dir.

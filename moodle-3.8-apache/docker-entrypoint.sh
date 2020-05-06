@@ -1,5 +1,6 @@
 #!/bin/bash
 set -euo pipefail
+declare MOODLE_DATA=/var/www/moodledata
 
 # install only if executed without CMD parameter
 
@@ -24,12 +25,22 @@ if [[ "$1" == apache2* ]] || [ "$1" == php-fpm ]; then
 		user="$(id -u)"
 		group="$(id -g)"
 	fi
+	if [ ! -d $MOODLE_DATA ]; then
+		mkdir $MOODLE_DATA
+		chown -R "$user:$group" $MOODLE_DATA
+		echo >&2 "Moodle Data directory not found. Created!"
+	else
+		echo >&2 "Moodle Data directory found"
+		# if the directory exists AND the permissions of it are root:root, let's chown it (likely a Docker-created directory)
+		if [ "$(id -u)" = '0' ] && [ "$(stat -c '%u:%g' $MOODLE_DATA)" = '0:0' ]; then
+		    echo >&2 "Changed permissions to Moodle Data directory"
+			chown -R "$user:$group" $MOODLE_DATA
+		fi
+	fi
+
 
 	if [ ! -e config.php ]; then
-		# if the directory exists and Moodle doesn't appear to be installed AND the permissions of it are root:root, let's chown it (likely a Docker-created directory)
-		if [ "$(id -u)" = '0' ] && [ "$(stat -c '%u:%g' .)" = '0:0' ]; then
-			chown "$user:$group" .
-		fi
+
 
 		echo >&2 "Moodle not found in $PWD - copying now..."
 		if [ -n "$(ls -A)" ]; then
