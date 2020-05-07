@@ -65,7 +65,7 @@ RUN	echo "Installing mooosh" && \
 		rm moosh.tar.gz
 
 
-# COPY moodle-config.php /usr/src/moodle/config.php
+COPY moodle-config.php /usr/src/moodle/config.php
 COPY docker-entrypoint.sh /usr/local/bin/
 
 # Fix the original permissions of /tmp, the PHP default upload tmp dir.
