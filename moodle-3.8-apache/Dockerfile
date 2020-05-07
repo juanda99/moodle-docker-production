@@ -72,6 +72,6 @@ COPY docker-entrypoint.sh /usr/local/bin/
 
 RUN chmod 777 /tmp && chmod +t /tmp ;\
 	chown -R www-data:www-data -R /usr/src/moodle
-
+RUN echo "new test..ssaaas."
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["apache2-foreground"]

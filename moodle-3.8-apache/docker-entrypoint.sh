@@ -62,22 +62,20 @@ if [[ "$1" == apache2* ]] || [ "$1" == php-fpm ]; then
 		fi
 		tar "${sourceTarArgs[@]}" . | tar "${targetTarArgs[@]}"
 		echo >&2 "Complete! Moodle has been successfully copied to $PWD"
-		# if [ ! -e .htaccess ]; then
-		# 	# NOTE: The "Indexes" option is disabled in the php:apache base image
-		# 	cat > .htaccess <<-'EOF'
-		# 		# BEGIN WordPress
-		# 		<IfModule mod_rewrite.c>
-		# 		RewriteEngine On
-		# 		RewriteBase /
-		# 		RewriteRule ^index\.php$ - [L]
-		# 		RewriteCond %{REQUEST_FILENAME} !-f
-		# 		RewriteCond %{REQUEST_FILENAME} !-d
-		# 		RewriteRule . /index.php [L]
-		# 		</IfModule>
-		# 		# END WordPress
-		# 	EOF
-		# 	chown "$user:$group" .htaccess
-		# fi
+		echo >&2 "Starting Moodle Installation"
+
+		# check if database is already installed 
+		echo "Does it execute? 3"
+		databaseCode=$(php $PWD/admin/cli/check_database_schema.php)
+		echo "Does it execute?"
+		if [ databaseCode -eq 2 ]; then
+			echo >&2 "Installing database..."
+			php $PWD/admin/cli/install_database.php --lang="es" --adminuser="root" --adminpass="password" --adminemail="juandacorreo@gmail.com" --agree-license --fullname="Moodle prueba" --shortname="prueba"
+		elif [ databaseCode -eq 0 ]; then
+			echo >&2 "Moodle Database found!"
+		else
+			echo >&2 "Could not install Moodle Database due to above errors!"
+		fi
 	fi
 fi
 
