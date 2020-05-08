@@ -5,6 +5,9 @@ declare MOODLE_DATA=/var/www/moodledata
 # install only if executed without CMD parameter
 
 if [[ "$1" == apache2* ]] || [ "$1" == php-fpm ]; then
+
+	# get user and group
+
 	if [ "$(id -u)" = '0' ]; then
 		case "$1" in
 			apache2*)
@@ -25,12 +28,15 @@ if [[ "$1" == apache2* ]] || [ "$1" == php-fpm ]; then
 		user="$(id -u)"
 		group="$(id -g)"
 	fi
+
+	# moodle data directory
+
 	if [ ! -d $MOODLE_DATA ]; then
 		mkdir $MOODLE_DATA
 		chown -R "$user:$group" $MOODLE_DATA
-		echo >&2 "Moodle Data directory not found. Created!"
+		echo >&2 "MOODLE DATA DIRECTORY CREATED"
 	else
-		echo >&2 "Moodle Data directory found"
+		echo >&2 "MOODLE DATA DIRECTORY FOUND: SKIP CREATION"
 		# if the directory exists AND the permissions of it are root:root, let's chown it (likely a Docker-created directory)
 		if [ "$(id -u)" = '0' ] && [ "$(stat -c '%u:%g' $MOODLE_DATA)" = '0:0' ]; then
 		    echo >&2 "Changed permissions to Moodle Data directory"
@@ -38,6 +44,7 @@ if [[ "$1" == apache2* ]] || [ "$1" == php-fpm ]; then
 		fi
 	fi
 
+	# moodle code
 
 	if [ ! -e config.php ]; then
 
@@ -61,22 +68,34 @@ if [[ "$1" == apache2* ]] || [ "$1" == php-fpm ]; then
 			targetTarArgs+=( --no-overwrite-dir )
 		fi
 		tar "${sourceTarArgs[@]}" . | tar "${targetTarArgs[@]}"
-		echo >&2 "Complete! Moodle has been successfully copied to $PWD"
-		echo >&2 "Starting Moodle Installation"
-
-		# check if database is already installed 
-		echo "Does it execute? 3"
-		databaseCode=$(php $PWD/admin/cli/check_database_schema.php)
-		echo "Does it execute?"
-		if [ databaseCode -eq 2 ]; then
-			echo >&2 "Installing database..."
-			php $PWD/admin/cli/install_database.php --lang="es" --adminuser="root" --adminpass="password" --adminemail="juandacorreo@gmail.com" --agree-license --fullname="Moodle prueba" --shortname="prueba"
-		elif [ databaseCode -eq 0 ]; then
-			echo >&2 "Moodle Database found!"
-		else
-			echo >&2 "Could not install Moodle Database due to above errors!"
-		fi
+		echo >&2 "MOODLE CODE CREATED"
+	else
+		echo >&2 "MOODLE CODE FOUND: SKIP CREATION"
 	fi
+
+	# database
+
+	echo "Checking database status..."
+	# prevent container exit by php return value
+	php /var/www/html/admin/cli/check_database_schema.php || :
+	dbStatus=$?
+	if [ $dbStatus  -eq 2 ]; then
+		echo >&2 "Creating database..."
+		php $PWD/admin/cli/install_database.php --lang="es" --adminuser="root" --adminpass="password" --adminemail="juandacorreo@gmail.com" --agree-license --fullname="Moodle prueba" --shortname="prueba"
+		echo >&2 "DATABASE CREATED"
+	elif [ $dbStatus -eq 0 ]; then
+		echo >&2 "MOODLE DATABASE FOUND: SKIP CREATION"
+	else
+		echo >&2 "Could not install Moodle Database due to errors!"
+	fi
+
+	# install plugins via moosh, first upgrade list
+	moosh plugin-list >/dev/null
+	# remove blank lines and comment lines
+	cat /usr/src/plugins |sed '/^#/d'|sed '/^$/d' >/usr/src/plugins_filtered
+	cd /var/www/html
+	# execute plugin installation
+	while read in; do moosh plugin-install "$in"; done < /usr/src/plugins_filtered
 fi
 
 exec "$@"

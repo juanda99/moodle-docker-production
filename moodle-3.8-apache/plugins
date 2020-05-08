@@ -1,0 +1,9 @@
+# Plugin list with [--release <build version>] if different from last
+# hack: last one does never get active, so install one more
+# not working in 3.8 theme snap
+#moosh plugin-install --release 2019051505 theme_snap
+
+--release 2019042008 mod_bigbluebuttonbn
+--release 2020020500 mod_hvp
+--release 2020043003 block_xp
+availability_xp 

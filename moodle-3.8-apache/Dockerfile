@@ -67,11 +67,11 @@ RUN	echo "Installing mooosh" && \
 
 COPY moodle-config.php /usr/src/moodle/config.php
 COPY docker-entrypoint.sh /usr/local/bin/
+COPY plugins /usr/src/
 
 # Fix the original permissions of /tmp, the PHP default upload tmp dir.
 
 RUN chmod 777 /tmp && chmod +t /tmp ;\
 	chown -R www-data:www-data -R /usr/src/moodle
-RUN echo "new test..ssaaas."
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["apache2-foreground"]
